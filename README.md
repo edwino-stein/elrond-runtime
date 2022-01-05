@@ -1,4 +1,4 @@
-# Elrond Runtime Application for Linux
+# Elrond Runtime Application (outdated/working progress)
 
 Runtime for Elrond Modules for Linux based platforms. The runtime application is the engine of projects based on Elrond Modules. The application runtime is responsible for load and initialize the modules instances and control to everything runs fine.
 
