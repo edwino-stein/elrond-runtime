@@ -55,3 +55,4 @@ find_package(Threads REQUIRED)
 
 # Add subprojects
 add_subdirectory(library)
+add_subdirectory(test)
