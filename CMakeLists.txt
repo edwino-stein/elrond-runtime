@@ -54,5 +54,5 @@ include("${ELROND_COMMON_DIR}/build/elrond.cmake")
 find_package(Threads REQUIRED)
 
 # Add subprojects
-add_subdirectory(library)
+add_subdirectory(base_runtime)
 add_subdirectory(test)

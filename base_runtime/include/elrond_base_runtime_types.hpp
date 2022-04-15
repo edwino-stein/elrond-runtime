@@ -1,5 +1,5 @@
-#ifndef ELROND_RUNTIME_LIBRARY_TYPES_HPP
-    #define ELROND_RUNTIME_LIBRARY_TYPES_HPP
+#ifndef ELROND_BASE_RUNTIME_TYPES_HPP
+    #define ELROND_BASE_RUNTIME_TYPES_HPP
 
     #include <elrond.hpp>
     #include <elrond_platform_runtime.hpp>

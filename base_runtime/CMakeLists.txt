@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.17)
 
 # Define project info
 project(
-    library
-    DESCRIPTION "Elrond runtime library"
+    base_runtime
+    DESCRIPTION "Elrond runtime base library"
     LANGUAGES CXX
 )
 

@@ -46,6 +46,6 @@ foreach(T ${SRC_TEST_CASES_FILES})
     endif()
     
     # Set the incluce directory and add libraries
-    target_link_libraries(${TEST_TARGET} PRIVATE library_shared Elrond::mock)
+    target_link_libraries(${TEST_TARGET} PRIVATE base_runtime_shared Elrond::mock)
         
 endforeach()
