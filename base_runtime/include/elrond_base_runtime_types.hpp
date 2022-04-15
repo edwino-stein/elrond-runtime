@@ -22,12 +22,15 @@
         namespace application
         {
             class ModuleFactoryPool;
+            class InstanceCtx;
         }
 
         namespace runtime
         {
             class NullArguments;
         }
+
+        using InstanceCtxP = std::shared_ptr<application::InstanceCtx>;
     }
 
 #endif
