@@ -18,6 +18,11 @@
         {
             class ModuleFactoryPool;
         }
+
+        namespace runtime
+        {
+            class NullArguments;
+        }
     }
 
 #endif
