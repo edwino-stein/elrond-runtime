@@ -49,6 +49,8 @@ jobs:
                 cd elrond
                 cmake -B.\build -G "NMake Makefiles" .
                 cmake --build ./build --target all --
+            - name: Run CMake
+              run: cmake -B./build -G "NMake Makefiles" .
             - name: Build everything
               run: cmake --build ./build --target all --
             - name: Run tests
