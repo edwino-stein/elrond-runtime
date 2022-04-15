@@ -33,18 +33,48 @@ class TestModule : public BaseGeneric
 };
 
 
-SCENARIO("Test the BaseApplication class in normal usage", "[application][BaseApplication]")
+SCENARIO("Test the BaseApplication class on normal usage", "[application][BaseApplication]")
 {
-    GIVEN("An instance of BaseApplication")
-    {
-        std::ostringstream info;
-        ConsoleAdapter adapter([&info](std::ostringstream& msg) { info << msg.str() << '\n'; });
+    std::ostringstream info;
+    ConsoleAdapter adapter([&info](std::ostringstream& msg) { info << msg.str() << '\n'; });
 
+    GIVEN("An instance of BaseApplication with an internal module factory")
+    {
         ModuleFactoryPool factories;
         factories.define<TestModule>(
             "test",
             ModuleInfo {"NAME", "AUTHOR", "EMAIL", "VERSION"}
         );
+
+        BaseApplication app(adapter, factories);
+
+        WHEN("Try to create an instance of 'test'")
+        {
+            app.add("test", "test");
+
+            THEN("The instance should be created")
+            {
+                REQUIRE(app.exists("test"));
+                
+                auto inst = app.get("test");
+                CHECK(inst->name() == "test");
+            }
+
+            WHEN("Call run() method")
+            {
+                app.run();
+                THEN("The instance lifecycle methods shold be called properly")
+                {
+                    CHECK(info.str() == "setup\nstart\nstop\n");
+                }
+            }
+        }
+    }
+
+    GIVEN("An instance of BaseApplication with an externel module factory")
+    {
+        ModuleFactoryPool factories;
+        factories.load("test", "ExternalModule");
 
         BaseApplication app(adapter, factories);
 
