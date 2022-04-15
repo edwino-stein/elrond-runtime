@@ -66,8 +66,9 @@ ModuleFactoryPool& ModuleFactoryPool::copyFrom(const FactoriesM& factories, bool
     return *this;
 }
 
-ModuleFactoryPool& ModuleFactoryPool::load(const std::string& name, const std::string& path)
+FactoryAdapterP ModuleFactoryPool::load(const std::string& name, const std::string& path)
 {
-    this->_factories[name] = std::make_shared<ExternalFactoryAdapter>(path);
-    return *this;
+    auto f = std::make_shared<ExternalFactoryAdapter>(path);
+    this->_factories[name] = f;
+    return f;
 }

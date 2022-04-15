@@ -35,11 +35,11 @@
                     ModuleFactoryPool& copyFrom(const elrond::platform::FactoriesM& factories);
                     ModuleFactoryPool& copyFrom(const elrond::platform::FactoriesM& factories, bool override);
 
-                    ModuleFactoryPool& load(const std::string& name, const std::string& path);
+                    elrond::platform::FactoryAdapterP load(const std::string& name, const std::string& path);
 
                     template <class T>
-                    ModuleFactoryPool& define(const std::string& name,
-                                              const elrond::platform::ModuleInfo& info);
+                    elrond::platform::FactoryAdapterP define(const std::string& name,
+                                                             const elrond::platform::ModuleInfo& info);
 
                     static ModuleFactoryPool createWithCommonInternals();
             };

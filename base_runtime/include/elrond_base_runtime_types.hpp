@@ -23,6 +23,7 @@
         {
             class ModuleFactoryPool;
             class InstanceCtx;
+            class BaseApplication;
         }
 
         namespace runtime
@@ -31,6 +32,7 @@
         }
 
         using InstanceCtxP = std::shared_ptr<application::InstanceCtx>;
+        using InstanceCtxH = std::function<void(InstanceCtxP)>;
     }
 
 #endif
