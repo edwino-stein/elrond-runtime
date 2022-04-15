@@ -3,7 +3,7 @@ name: Build and test
 on: [push]
 
 jobs:
-    build-and-test-linux:
+    build-and-test-unix:
         name: Build and test on ${{matrix.os}}
         runs-on: ${{ matrix.os }}
 
@@ -11,15 +11,21 @@ jobs:
             matrix:
                 os: [ubuntu-latest]
         steps:
-            - name: Checkout respository
-              uses: actions/checkout@v1
-            - name: Checkout submodules
+            - name: Checkout code
+              uses: actions/checkout@v2
+            - name: Init submodules
               uses: srt32/git-actions@v0.0.3
               with:
                 args: git submodule update --init --recursive
-            - name: Building everything
-              run: make all -j4
-            - name: Building and doing all tests of runtime-lib
-              run: make test-lib-all a="-s -d yes" -j4
-            - name: Building and doing all tests of runtime-cli
-              run: make test-cli-all a="-s -d yes" -j4
+            - name: Building Elrond Common Library project
+              run: |
+                cd elrond && \
+                cmake -B./build -G "Unix Makefiles" . && \
+                cmake --build ./build --target all -j 6 -- 
+            - name: Run CMake
+              run: cmake -B./build -G "Unix Makefiles" .
+            - name: Build everything
+              run: cmake --build ./build --target all -j 6 --
+            - name: Run tests
+              run: ctest -j6 -T test --output-on-failure --test-dir ./build
+
