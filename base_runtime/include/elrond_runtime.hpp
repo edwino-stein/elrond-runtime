@@ -4,6 +4,7 @@
     #include "interface/Application.hpp"
     #include "application/ModuleFactoryPool.ipp"
     #include "application/InstanceCtx.hpp"
+    #include "application/BaseApplication.hpp"
     #include "runtime/NullArguments.hpp"
 
 #endif
