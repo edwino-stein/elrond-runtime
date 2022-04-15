@@ -8,13 +8,13 @@
         namespace application
         {
             template <class T>
-            ModuleFactoryPool& ModuleFactoryPool::define(
+            elrond::platform::FactoryAdapterP ModuleFactoryPool::define(
                 const std::string& name,
                 const elrond::platform::ModuleInfo& info
             ){
                 auto f = std::make_shared<elrond::platform::InternalFactoryAdapter<T>>(info);
                 this->_factories[name] = f;
-                return *this;
+                return f;
             }
         }
     }
