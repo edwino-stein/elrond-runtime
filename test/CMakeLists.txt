@@ -6,6 +6,10 @@ project(
     LANGUAGES CXX
 )
 
+# Copy External example module from common project tests
+file(GLOB EXT_MODULE_FILE "${ELROND_COMMON_DIR}/build/test/ExternalModule.*")
+configure_file(${EXT_MODULE_FILE} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
 # Search for test cases source files
 file(GLOB_RECURSE SRC_TEST_CASES_FILES "${PROJECT_SOURCE_DIR}/*.cpp")
 
@@ -46,6 +50,6 @@ foreach(T ${SRC_TEST_CASES_FILES})
     endif()
     
     # Set the incluce directory and add libraries
-    target_link_libraries(${TEST_TARGET} PRIVATE library_shared Elrond::mock)
+    target_link_libraries(${TEST_TARGET} PRIVATE base_runtime_shared Elrond::mock)
         
 endforeach()
