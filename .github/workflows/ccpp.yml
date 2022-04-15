@@ -9,7 +9,7 @@ jobs:
 
         strategy:
             matrix:
-                os: [ubuntu-latest]
+                os: [ubuntu-latest, macos-latest]
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
@@ -17,9 +17,9 @@ jobs:
                  submodules: recursive
             - name: Building Elrond Common Library project
               run: |
-                cd elrond && \
-                cmake -B./build -G "Unix Makefiles" . && \
-                cmake --build ./build --target all -j 6 -- 
+                cd elrond \
+                && cmake -B./build -G "Unix Makefiles" . \
+                && cmake --build ./build --target all -j 6 -- 
             - name: Run CMake
               run: cmake -B./build -G "Unix Makefiles" .
             - name: Build everything
