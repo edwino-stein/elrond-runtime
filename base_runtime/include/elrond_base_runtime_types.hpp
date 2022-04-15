@@ -9,6 +9,11 @@
 
     namespace elrond
     {
+        namespace interface
+        {
+            class Application;
+        }
+    
         namespace platform
         {
             using FactoriesM = std::map<std::string, elrond::platform::FactoryAdapterP>;
