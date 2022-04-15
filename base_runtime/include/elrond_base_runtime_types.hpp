@@ -9,6 +9,11 @@
 
     namespace elrond
     {
+        namespace interface
+        {
+            class Application;
+        }
+    
         namespace platform
         {
             using FactoriesM = std::map<std::string, elrond::platform::FactoryAdapterP>;
@@ -17,12 +22,15 @@
         namespace application
         {
             class ModuleFactoryPool;
+            class InstanceCtx;
         }
 
         namespace runtime
         {
             class NullArguments;
         }
+
+        using InstanceCtxP = std::shared_ptr<application::InstanceCtx>;
     }
 
 #endif
