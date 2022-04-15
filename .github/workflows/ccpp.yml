@@ -26,4 +26,30 @@ jobs:
               run: cmake --build ./build --target all -j 6 --
             - name: Run tests
               run: ctest -j6 -T test --output-on-failure --test-dir ./build
+ 
+    build-and-test-windows:
+        name: Build and test on ${{matrix.os}} (${{matrix.arch}})
+        runs-on: ${{ matrix.os }}
 
+        strategy:
+            matrix:
+                os: [windows-latest]
+                arch: [amd64, x86]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                 submodules: recursive
+            - name: Start VCTools
+              uses: seanmiddleditch/gha-setup-vsdevenv@master
+              with:
+                arch: ${{matrix.arch}}
+            - name: Building Elrond Common Library project
+              run: |
+                cd elrond \
+                && cmake -B.\build -G "NMake Makefiles" . \
+                && cmake --build ./build --target all --
+            - name: Build everything
+              run: cmake --build ./build --target all --
+            - name: Run tests
+              run: ctest -j6 -T test --output-on-failure --test-dir ./build
