@@ -6,6 +6,7 @@
     #include <elrond_common_runtime.hpp>
 
     #include <map>
+    #include <future>
 
     namespace elrond
     {
@@ -29,10 +30,14 @@
         namespace runtime
         {
             class NullArguments;
+            template <class T> class FutureHolder;
         }
-
+    
         using InstanceCtxP = std::shared_ptr<application::InstanceCtx>;
         using InstanceCtxH = std::function<void(InstanceCtxP)>;
+        
+        template <class T>
+        using FutureHolderP = std::shared_ptr<runtime::FutureHolder<T>>;
     }
 
 #endif

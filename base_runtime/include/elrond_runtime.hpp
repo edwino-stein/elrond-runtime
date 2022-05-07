@@ -6,5 +6,6 @@
     #include "application/InstanceCtx.hpp"
     #include "application/BaseApplication.hpp"
     #include "runtime/NullArguments.hpp"
+    #include "runtime/FutureHolder.ipp"
 
 #endif
