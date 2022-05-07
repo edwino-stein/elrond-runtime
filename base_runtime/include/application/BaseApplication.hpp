@@ -14,12 +14,14 @@
                     elrond::interface::ConsoleAdapter& _consoleAdapter;
                     const elrond::application::ModuleFactoryPool& _factories;
                     std::map<std::string, elrond::InstanceCtxP> _instances;
-                    std::atomic_bool _running;
+                    std::atomic<State> _state;
 
                     static void mainLoop(BaseApplication& app,
                                          std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops);
 
                 protected:
+
+                    void state(State state);
 
                     virtual void setup();
                     virtual std::future<void> start();
@@ -28,6 +30,8 @@
 
                     BaseApplication(elrond::interface::ConsoleAdapter& consoleAdapter,
                                     const elrond::application::ModuleFactoryPool& factories);
+                    
+                    virtual ~BaseApplication();
 
                     elrond::pointer<elrond::interface::Console>
                     console(const std::string& name) const override;
@@ -45,6 +49,9 @@
 
                     virtual void stop();
                     virtual std::future<void> run();
+
+                    State state() const;
+                    void reset();
             };
         }
     }
