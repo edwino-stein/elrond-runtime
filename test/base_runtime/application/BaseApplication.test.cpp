@@ -163,6 +163,23 @@ SCENARIO("Test the BaseApplication class just starting, runnig per 100ms and the
                     CHECK_THAT(info.str(), Contains("stop"));
                 }
             }
+
+            AND_WHEN("Run the application, wait 50ms and stop it foced")
+            {
+                auto f = app.run();
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                app.stop(true);
+                f.get();
+
+                THEN("The instance lifecycle methods shold be called properly")
+                {
+                    info.flush();
+                    CHECK_THAT(info.str(), Contains("setup"));
+                    CHECK_THAT(info.str(), Contains("start"));
+                    CHECK_THAT(info.str(), Contains("loop"));
+                    CHECK_THAT(info.str(), Contains("stop"));
+                }
+            }
         }
     }
 }

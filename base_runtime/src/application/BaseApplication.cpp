@@ -149,10 +149,10 @@ std::future<void> BaseApplication::start()
     );
 }
 
-void BaseApplication::stop()
+void BaseApplication::stop(const bool forced)
 {
     const auto state = this->state();
-    if (state != State::RUNNING) return;
+    if (!forced && state != State::RUNNING) return;
 
     this->state(State::STOPPING);
 
