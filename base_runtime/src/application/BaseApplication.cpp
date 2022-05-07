@@ -80,6 +80,8 @@ elrond::InstanceCtxP BaseApplication::add(const std::string& name, const std::st
         throw std::runtime_error("Invalid application state");
     }
 
+    this->onInstanceCreating(name, factory);
+
     if (this->exists(name))
     {
         throw std::runtime_error("Module instance redefinition");
@@ -87,6 +89,7 @@ elrond::InstanceCtxP BaseApplication::add(const std::string& name, const std::st
 
     auto ctx = InstanceCtx::make(name, factory, *this);
     this->_instances[name] = ctx;
+    this->onInstanceCreated(*ctx);
 
     return ctx;
 }
@@ -104,8 +107,14 @@ void BaseApplication::setup()
     if (this->state() != State::CREATED) return;
     
     this->state(State::INITIALIZING);
+
+    auto self = this;
     this->each(
-        [](elrond::InstanceCtxP i) { i->setup(); }
+        [&self](elrond::InstanceCtxP i)
+        {
+            self->onInstanceSetup(*i);
+            i->setup();
+        }
     );
 
     this->state(State::INITIALIZED);
@@ -120,10 +129,12 @@ std::future<void> BaseApplication::start()
 
     this->state(State::STARTING);
 
+    auto self = this;
     std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops;
     this->each(
-        [&loops](elrond::InstanceCtxP i)
+        [&self, &loops](elrond::InstanceCtxP i)
         {
+            self->onInstanceStart(*i);
             loops.push(
                 FutureHolder<elrond::InstanceLoopCfg>::make(i->start())
             );
@@ -140,30 +151,28 @@ std::future<void> BaseApplication::start()
 
 void BaseApplication::stop()
 {
-    if (this->state() != State::RUNNING) return;
+    const auto state = this->state();
+    if (state != State::RUNNING) return;
 
     this->state(State::STOPPING);
 
-    this->each(
-        [](elrond::InstanceCtxP i) { i->stop(); }
-    );
+    if (state == State::RUNNING)
+    {
+        auto self = this;
+        this->each(
+            [&self](elrond::InstanceCtxP i)
+            {
+                self->onInstanceStop(*i);
+                i->stop();
+            }
+        );
+    }
 }
 
 std::future<void> BaseApplication::run()
 {
     this->setup();
     return this->start();
-}
-
-State BaseApplication::state() const
-{
-    return this->_state;
-}
-
-void BaseApplication::state(State state)
-{
-    if (this->state() == state) return;
-    this->_state = state;
 }
 
 void BaseApplication::reset()
@@ -220,4 +229,6 @@ void BaseApplication::mainLoop(
         if(l->ready()) l->get();
         else loops.push(l);
     }
+
+    app.state(State::STOPPED);
 }

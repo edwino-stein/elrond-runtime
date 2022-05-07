@@ -20,3 +20,8 @@ void ApplicationEvents::state(State state)
 }
 
 void ApplicationEvents::onStateChange(State) const {}
+void ApplicationEvents::onInstanceCreating(const std::string&, const std::string&) const {}
+void ApplicationEvents::onInstanceCreated(const InstanceCtx&) const {}
+void ApplicationEvents::onInstanceSetup(const InstanceCtx&) const {}
+void ApplicationEvents::onInstanceStart(const InstanceCtx&) const {}
+void ApplicationEvents::onInstanceStop(const InstanceCtx&) const {}
