@@ -93,12 +93,12 @@ elrond::InstanceLoopCfg InstanceCtx::doLoop(const elrond::InstanceLoopCfg& cfg)
     auto ctx = cfg.ctx;
     if (ctx->loopEnable())
     {
+        ctx->_instance->instance().loop(ctx);
+
         if(cfg.interval > 0)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(cfg.interval));
         }
-
-        ctx->_instance->instance().loop(ctx);
     }
 
     return ctx->loopCfg();
