@@ -23,6 +23,17 @@
 
         namespace application
         {
+            enum class State
+            {
+                CREATED,
+                INITIALIZING,
+                INITIALIZED,
+                STARTING,
+                RUNNING,
+                STOPPING,
+                STOPPED
+            };
+
             class ModuleFactoryPool;
             class InstanceCtx;
             class BaseApplication;
