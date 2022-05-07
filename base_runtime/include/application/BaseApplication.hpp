@@ -46,7 +46,7 @@
                     elrond::InstanceCtxP add(const std::string& name, const std::string& factory);
                     void each(elrond::InstanceCtxH handle) const;
 
-                    virtual void stop();
+                    virtual void stop(const bool forced = false);
                     virtual std::future<void> run();
                     void reset();
             };

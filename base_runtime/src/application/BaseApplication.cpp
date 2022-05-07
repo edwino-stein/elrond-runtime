@@ -149,12 +149,12 @@ std::future<void> BaseApplication::start()
     );
 }
 
-void BaseApplication::stop()
+void BaseApplication::stop(const bool forced)
 {
     const auto state = this->state();
-    if (state != State::RUNNING) return;
+    if (!forced && state != State::RUNNING) return;
 
-    this->state(State::STOPPING);
+    this->state(forced ? State::STOPPING_FORCED : State::STOPPING);
 
     if (state == State::RUNNING)
     {
@@ -183,6 +183,7 @@ void BaseApplication::reset()
         case State::STARTING:
         case State::RUNNING:
         case State::STOPPING:
+        case State::STOPPING_FORCED:
             throw std::runtime_error("Invalid application state"); 
         default:
         break;
@@ -201,7 +202,7 @@ void BaseApplication::mainLoop(
         const elrond::sizeT len = loops.size();
         for (elrond::sizeT i = 0; i < len; ++i)
         {
-            if (app.state() == State::STOPPING) break;
+            if (app.state() == State::STOPPING || app.state() == State::STOPPING_FORCED) break;
 
             auto l = loops.front();
             loops.pop();
@@ -221,7 +222,7 @@ void BaseApplication::mainLoop(
         }
     }
 
-    while(loops.size() > 0)
+    while(app.state() != State::STOPPING_FORCED && loops.size() > 0)
     {
         auto l = loops.front();
         loops.pop();

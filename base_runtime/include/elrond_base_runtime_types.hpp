@@ -31,6 +31,7 @@
                 STARTING,
                 RUNNING,
                 STOPPING,
+                STOPPING_FORCED,
                 STOPPED
             };
 
