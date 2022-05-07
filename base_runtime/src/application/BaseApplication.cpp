@@ -6,6 +6,7 @@
 #include "runtime/FutureHolder.ipp"
 
 using elrond::application::BaseApplication;
+using elrond::application::State;
 using elrond::interface::ConsoleAdapter;
 using elrond::application::ModuleFactoryPool;
 using elrond::application::InstanceCtx;
@@ -21,8 +22,13 @@ BaseApplication::BaseApplication(
     _consoleAdapter(consoleAdapter),
     _factories(factories),
     _instances(),
-    _running(false)
+    _state(State::CREATED)
 {}
+
+BaseApplication::~BaseApplication()
+{
+    if (this->state() == State::RUNNING) this->stop();
+}
 
 elrond::pointer<elrond::interface::Console>
 BaseApplication::console(const std::string& name) const
@@ -69,6 +75,11 @@ elrond::InstanceCtxP BaseApplication::get(const std::string& name) const
 
 elrond::InstanceCtxP BaseApplication::add(const std::string& name, const std::string& factory)
 {
+    if (this->state() != State::CREATED)
+    {
+        throw std::runtime_error("Invalid application state");
+    }
+
     if (this->exists(name))
     {
         throw std::runtime_error("Module instance redefinition");
@@ -90,13 +101,25 @@ void BaseApplication::each(elrond::InstanceCtxH handle) const
 
 void BaseApplication::setup()
 {
+    if (this->state() != State::CREATED) return;
+    
+    this->state(State::INITIALIZING);
     this->each(
         [](elrond::InstanceCtxP i) { i->setup(); }
     );
+
+    this->state(State::INITIALIZED);
 }
 
 std::future<void> BaseApplication::start()
 {
+    if (this->state() != State::INITIALIZED)
+    {
+        throw std::runtime_error("Invalid application state");
+    }
+
+    this->state(State::STARTING);
+
     std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops;
     this->each(
         [&loops](elrond::InstanceCtxP i)
@@ -107,7 +130,7 @@ std::future<void> BaseApplication::start()
         }
     );
 
-    this->_running = true;
+    this->state(State::RUNNING);
     return std::async(
         BaseApplication::mainLoop,
         std::ref(*this),
@@ -117,9 +140,9 @@ std::future<void> BaseApplication::start()
 
 void BaseApplication::stop()
 {
-    if (!this->_running) return;
+    if (this->state() != State::RUNNING) return;
 
-    this->_running = false;
+    this->state(State::STOPPING);
 
     this->each(
         [](elrond::InstanceCtxP i) { i->stop(); }
@@ -132,15 +155,46 @@ std::future<void> BaseApplication::run()
     return this->start();
 }
 
+State BaseApplication::state() const
+{
+    return this->_state;
+}
+
+void BaseApplication::state(State state)
+{
+    if (this->state() == state) return;
+    this->_state = state;
+}
+
+void BaseApplication::reset()
+{
+    const auto state = this->state();
+    switch (state)
+    {
+        case State::INITIALIZING:
+        case State::STARTING:
+        case State::RUNNING:
+        case State::STOPPING:
+            throw std::runtime_error("Invalid application state"); 
+        default:
+        break;
+    }
+
+    this->_instances.clear();
+    this->state(State::CREATED);
+}
+
 void BaseApplication::mainLoop(
     BaseApplication& app,
     std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops
 ){
-    while (app._running)
+    while (app.state() == State::RUNNING)
     {
         const elrond::sizeT len = loops.size();
         for (elrond::sizeT i = 0; i < len; ++i)
         {
+            if (app.state() == State::STOPPING) break;
+
             auto l = loops.front();
             loops.pop();
 
