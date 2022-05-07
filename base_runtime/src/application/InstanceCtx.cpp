@@ -61,24 +61,47 @@ bool InstanceCtx::loopAsync() const
     return this->_loopAsync;
 }
 
+elrond::InstanceLoopCfg InstanceCtx::loopCfg()
+{
+    return { this->loopEnable(), this->loopInterval(), this->shared_from_this() };
+}
+
 void InstanceCtx::setup()
 {
     this->_instance->instance().setup(this->shared_from_this());
 }
 
-void InstanceCtx::start()
+std::future<elrond::InstanceLoopCfg> InstanceCtx::start()
 {
     this->_instance->instance().start(this->shared_from_this());
+    auto mode = this->loopEnable() ? std::launch::async : std::launch::deferred;
+    return std::async(mode, InstanceCtx::doLoop, this->loopCfg());
 }
 
-void InstanceCtx::loop()
+std::future<elrond::InstanceLoopCfg> InstanceCtx::loop()
 {
-    this->_instance->instance().loop(this->shared_from_this());
+    return std::async(std::launch::async, InstanceCtx::doLoop, this->loopCfg());
 }
 
 void InstanceCtx::stop()
 {
     this->_instance->instance().stop(this->shared_from_this());
+}
+
+elrond::InstanceLoopCfg InstanceCtx::doLoop(const elrond::InstanceLoopCfg& cfg)
+{
+    auto ctx = cfg.ctx;
+    if (ctx->loopEnable())
+    {
+        ctx->_instance->instance().loop(ctx);
+
+        if(cfg.interval > 0)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(cfg.interval));
+        }
+    }
+
+    return ctx->loopCfg();
 }
 
 elrond::InstanceCtxP InstanceCtx::make(

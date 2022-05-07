@@ -10,6 +10,7 @@ using elrond::platform::ModuleInfo;
 using elrond::runtime::Console;
 using elrond::mock::ConsoleAdapter;
 using elrond::runtime::NullArguments;
+using Catch::Matchers::Contains;
 
 class TestModule : public BaseGeneric
 {
@@ -68,7 +69,7 @@ struct TestApp : public Application
 SCENARIO("Test InstanceCtx of internal module on normal usage", "[application][InstanceCtx]")
 {
     std::ostringstream info;
-    TestApp app([&info](std::ostringstream& msg) {info << msg.str(); });
+    TestApp app([&info](std::ostringstream& msg) {info << msg.str() << std::endl;});
 
     GIVEN("An TestModule instance context")
     {
@@ -93,7 +94,7 @@ SCENARIO("Test InstanceCtx of internal module on normal usage", "[application][I
             auto console = ctx->console();
             THEN("Should return the console instance")
             {
-                CHECK(dynamic_cast<Console*>(console.get()) != nullptr);
+                CHECK(isInstanceOf<Console>(console.get()));
             }
         }
 
@@ -102,16 +103,12 @@ SCENARIO("Test InstanceCtx of internal module on normal usage", "[application][I
             auto args = ctx->arguments();
             THEN("Should return the arguments instance")
             {
-                CHECK(dynamic_cast<NullArguments*>(args.get()) != nullptr);
+                CHECK(isInstanceOf<NullArguments>(args.get()));
             }
         }
 
         WHEN("Set loop parameters")
         {
-            REQUIRE_FALSE(ctx->loopEnable());
-            REQUIRE_FALSE(ctx->loopAsync());
-            REQUIRE(ctx->loopInterval() == 0);
-
             ctx->loopEnable(true);
             ctx->loopInterval(500);
             ctx->loopAsync(true);
@@ -126,45 +123,71 @@ SCENARIO("Test InstanceCtx of internal module on normal usage", "[application][I
 
         WHEN("Call setup() method")
         {
-            REQUIRE(info.str() == "");
-
             ctx->setup();
             THEN("The info console stream should capture 'setup' string")
             {
-                CHECK(info.str() == "setup");
+                CHECK_THAT(info.str(), Contains("setup"));
             }
         }
 
-        WHEN("Call start() method")
+        WHEN("Call start() method with loop disabled")
         {
-            REQUIRE(info.str() == "");
+            ctx->loopEnable(false);
+            auto f = ctx->start();
 
-            ctx->start();
-            THEN("The info console stream should capture 'start' string")
+            THEN("Should return a future with status deferred")
             {
-                CHECK(info.str() == "start");
+                CHECK(f.wait_for(std::chrono::milliseconds(0)) == std::future_status::deferred);
+                auto cfg = f.get();
+
+                AND_THEN("The InstanceLoopCfg should define the instance loop as disabled")
+                {
+                    CHECK_FALSE(cfg.enabled);
+                }
+
+                AND_THEN("The info console stream should capture 'start' string")
+                {
+                    CHECK_THAT(info.str(), Contains("start"));
+                }
             }
         }
 
-        WHEN("Call loop() method")
+        WHEN("Call start() method with loop enabled for every 100ms")
         {
-            REQUIRE(info.str() == "");
+            ctx->loopEnable(true);
+            ctx->loopAsync(true);
+            ctx->loopInterval(100);
 
-            ctx->loop();
-            THEN("The info console stream should capture 'loop' string")
+            auto f = ctx->start();
+
+            THEN("Should return a future with status timeout")
             {
-                CHECK(info.str() == "loop");
+                CHECK(f.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout);
+                auto cfg = f.get();
+
+                AND_THEN("The InstanceLoopCfg should define the instance loop as enabled")
+                {
+                    CHECK(cfg.enabled);
+                }
+
+                AND_THEN("The InstanceLoopCfg should define the instance next loop to 100ms")
+                {
+                    CHECK(cfg.interval == 100);
+                }
+
+                AND_THEN("The info console stream should capture 'loop' string")
+                {
+                    CHECK_THAT(info.str(), Contains("loop"));
+                }
             }
         }
 
-        WHEN("Call stop() method")
+        WHEN("Call setup() method")
         {
-            REQUIRE(info.str() == "");
-
             ctx->stop();
             THEN("The info console stream should capture 'stop' string")
             {
-                CHECK(info.str() == "stop");
+                CHECK_THAT(info.str(), Contains("stop"));
             }
         }
     }
@@ -173,7 +196,7 @@ SCENARIO("Test InstanceCtx of internal module on normal usage", "[application][I
 SCENARIO("Test InstanceCtx of external module on normal usage", "[application][InstanceCtx]")
 {
     std::ostringstream info;
-    TestApp app([&info](std::ostringstream& msg) {info << msg.str(); });
+    TestApp app([&info](std::ostringstream& msg) {info << msg.str() << std::endl;});
 
     GIVEN("An external instance context")
     {
@@ -196,40 +219,68 @@ SCENARIO("Test InstanceCtx of external module on normal usage", "[application][I
             ctx->setup();
             THEN("The info console stream should capture 'setup' string")
             {
-                CHECK(info.str() == "setup");
+                CHECK_THAT(info.str(), Contains("setup"));
             }
         }
 
-        WHEN("Call start() method")
+        WHEN("Call start() method with loop disabled")
         {
-            REQUIRE(info.str() == "");
+            ctx->loopEnable(false);
+            auto f = ctx->start();
 
-            ctx->start();
-            THEN("The info console stream should capture 'start' string")
+            THEN("Should return a future with status deferred")
             {
-                CHECK(info.str() == "start");
+                CHECK(f.wait_for(std::chrono::milliseconds(0)) == std::future_status::deferred);
+                auto cfg = f.get();
+
+                AND_THEN("The InstanceLoopCfg should define the instance loop as disabled")
+                {
+                    CHECK_FALSE(cfg.enabled);
+                }
+
+                AND_THEN("The info console stream should capture 'start' string")
+                {
+                    CHECK_THAT(info.str(), Contains("start"));
+                }
             }
         }
 
-        WHEN("Call loop() method")
+        WHEN("Call start() method with loop enabled for every 100ms")
         {
-            REQUIRE(info.str() == "");
+            ctx->loopEnable(true);
+            ctx->loopAsync(true);
+            ctx->loopInterval(100);
 
-            ctx->loop();
-            THEN("The info console stream should capture 'loop' string")
+            auto f = ctx->start();
+
+            THEN("Should return a future with status timeout")
             {
-                CHECK(info.str() == "loop");
+                CHECK(f.wait_for(std::chrono::milliseconds(0)) == std::future_status::timeout);
+                auto cfg = f.get();
+
+                AND_THEN("The InstanceLoopCfg should define the instance loop as enabled")
+                {
+                    CHECK(cfg.enabled);
+                }
+
+                AND_THEN("The InstanceLoopCfg should define the instance next loop to 100ms")
+                {
+                    CHECK(cfg.interval == 100);
+                }
+
+                AND_THEN("The info console stream should capture 'loop' string")
+                {
+                    CHECK_THAT(info.str(), Contains("loop"));
+                }
             }
         }
 
-        WHEN("Call stop() method")
+        WHEN("Call setup() method")
         {
-            REQUIRE(info.str() == "");
-
             ctx->stop();
             THEN("The info console stream should capture 'stop' string")
             {
-                CHECK(info.str() == "stop");
+                CHECK_THAT(info.str(), Contains("stop"));
             }
         }
     }
