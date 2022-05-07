@@ -3,6 +3,7 @@
 #include "application/ModuleFactoryPool.ipp"
 #include "application/InstanceCtx.hpp"
 #include "runtime/NullArguments.hpp"
+#include "runtime/FutureHolder.ipp"
 
 using elrond::application::BaseApplication;
 using elrond::interface::ConsoleAdapter;
@@ -10,13 +11,17 @@ using elrond::application::ModuleFactoryPool;
 using elrond::application::InstanceCtx;
 using elrond::runtime::Console;
 using elrond::runtime::NullArguments;
+using elrond::runtime::FutureHolder;
+
 
 BaseApplication::BaseApplication(
     elrond::interface::ConsoleAdapter& consoleAdapter,
     const elrond::application::ModuleFactoryPool& factories
 ):
     _consoleAdapter(consoleAdapter),
-    _factories(factories)
+    _factories(factories),
+    _instances(),
+    _running(false)
 {}
 
 elrond::pointer<elrond::interface::Console>
@@ -64,21 +69,15 @@ elrond::InstanceCtxP BaseApplication::get(const std::string& name) const
 
 elrond::InstanceCtxP BaseApplication::add(const std::string& name, const std::string& factory)
 {
-    try
+    if (this->exists(name))
     {
-        if (this->exists(name))
-        {
-            throw std::runtime_error("Module instance redefinition");
-        }
+        throw std::runtime_error("Module instance redefinition");
+    }
 
-        auto ctx = InstanceCtx::make(name, factory, *this);
-        this->_instances[name] = ctx;
-        return ctx;
-    }
-    catch(const std::exception& e)
-    {
-        throw e;
-    }
+    auto ctx = InstanceCtx::make(name, factory, *this);
+    this->_instances[name] = ctx;
+
+    return ctx;
 }
 
 void BaseApplication::each(elrond::InstanceCtxH handle) const
@@ -96,19 +95,76 @@ void BaseApplication::setup()
     );
 }
 
-void BaseApplication::start()
+std::future<void> BaseApplication::start()
 {
+    std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops;
     this->each(
-        [](elrond::InstanceCtxP i) { i->start(); }
+        [&loops](elrond::InstanceCtxP i)
+        {
+            loops.push(
+                FutureHolder<elrond::InstanceLoopCfg>::make(i->start())
+            );
+        }
     );
+
+    this->_running = true;
+    return std::async(
+        BaseApplication::mainLoop,
+        std::ref(*this),
+        loops
+    );
+}
+
+void BaseApplication::stop()
+{
+    if (!this->_running) return;
+
+    this->_running = false;
 
     this->each(
         [](elrond::InstanceCtxP i) { i->stop(); }
     );
 }
 
-void BaseApplication::run()
+std::future<void> BaseApplication::run()
 {
     this->setup();
-    this->start();
+    return this->start();
+}
+
+void BaseApplication::mainLoop(
+    BaseApplication& app,
+    std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops
+){
+    while (app._running)
+    {
+        const elrond::sizeT len = loops.size();
+        for (elrond::sizeT i = 0; i < len; ++i)
+        {
+            auto l = loops.front();
+            loops.pop();
+
+            if(!l->ready())
+            {
+                loops.push(l);
+                continue;
+            }
+
+            auto cfg = l->get();
+            if (!cfg.enabled) continue;
+
+            loops.push(
+                FutureHolder<elrond::InstanceLoopCfg>::make(cfg.ctx->loop())
+            );
+        }
+    }
+
+    while(loops.size() > 0)
+    {
+        auto l = loops.front();
+        loops.pop();
+
+        if(l->ready()) l->get();
+        else loops.push(l);
+    }
 }

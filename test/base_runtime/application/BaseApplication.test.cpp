@@ -7,6 +7,7 @@ using elrond::application::ModuleFactoryPool;
 using elrond::mock::ConsoleAdapter;
 using elrond::module::BaseGeneric;
 using elrond::platform::ModuleInfo;
+using Catch::Matchers::Contains;
 
 class TestModule : public BaseGeneric
 {
@@ -32,8 +33,16 @@ class TestModule : public BaseGeneric
         }
 };
 
+class TestErrorModule : public TestModule
+{
+    public:
+        void loop(elrond::ContextP ctx)
+        {
+            ctx->console()->error("This is an error");
+        }
+};
 
-SCENARIO("Test the BaseApplication class on normal usage", "[application][BaseApplication]")
+SCENARIO("Test the BaseApplication class just starting and stopping", "[application][BaseApplication]")
 {
     std::ostringstream info;
     ConsoleAdapter adapter([&info](std::ostringstream& msg) { info << msg.str() << '\n'; });
@@ -56,16 +65,23 @@ SCENARIO("Test the BaseApplication class on normal usage", "[application][BaseAp
             {
                 REQUIRE(app.exists("test"));
                 
-                auto inst = app.get("test");
-                CHECK(inst->name() == "test");
+                auto ctx = app.get("test");
+                CHECK(ctx->name() == "test");
             }
 
             WHEN("Call run() method")
             {
-                app.run();
+                auto f = app.run();
+                app.stop();
+                f.get();
+
                 THEN("The instance lifecycle methods shold be called properly")
                 {
-                    CHECK(info.str() == "setup\nstart\nstop\n");
+                    info.flush();
+                    CHECK_THAT(info.str(), Contains("setup"));
+                    CHECK_THAT(info.str(), Contains("start"));
+                    CHECK_THAT(info.str(), !Contains("loop"));
+                    CHECK_THAT(info.str(), Contains("stop"));
                 }
             }
         }
@@ -86,16 +102,119 @@ SCENARIO("Test the BaseApplication class on normal usage", "[application][BaseAp
             {
                 REQUIRE(app.exists("test"));
                 
-                auto inst = app.get("test");
-                CHECK(inst->name() == "test");
+                auto ctx = app.get("test");
+                CHECK(ctx->name() == "test");
             }
 
             WHEN("Call run() method")
             {
-                app.run();
+                auto f = app.run();
+                app.stop();
+                f.get();
                 THEN("The instance lifecycle methods shold be called properly")
                 {
-                    CHECK(info.str() == "setup\nstart\nstop\n");
+                    info.flush();
+                    CHECK_THAT(info.str(), Contains("setup"));
+                    CHECK_THAT(info.str(), Contains("start"));
+                    CHECK_THAT(info.str(), !Contains("loop"));
+                    CHECK_THAT(info.str(), Contains("stop"));
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("Test the BaseApplication class just starting, runnig per 100ms and then stopping", "[application][BaseApplication]")
+{
+    std::ostringstream info;
+    ConsoleAdapter adapter([&info](std::ostringstream& msg) { info << msg.str() << '\n'; });
+
+    GIVEN("An instance of BaseApplication with an internal module factory")
+    {
+        ModuleFactoryPool factories;
+        factories.define<TestModule>(
+            "test",
+            ModuleInfo {"NAME", "AUTHOR", "EMAIL", "VERSION"}
+        );
+
+        BaseApplication app(adapter, factories);
+
+        WHEN("Add the module instance of 'test' with loop every 25ms")
+        {
+            app.add("test", "test");
+            
+            auto ctx = app.get("test");
+            ctx->loopEnable(true);
+            ctx->loopInterval(25);
+
+            AND_WHEN("Run the application, wait 100ms and stop it")
+            {
+                auto f = app.run();
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                app.stop();
+                f.get();
+
+                THEN("The instance lifecycle methods shold be called properly")
+                {
+                    info.flush();
+                    CHECK_THAT(info.str(), Contains("setup"));
+                    CHECK_THAT(info.str(), Contains("start"));
+                    CHECK_THAT(info.str(), Contains("loop"));
+                    CHECK_THAT(info.str(), Contains("stop"));
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("Test the BaseApplication class just starting, run and the module instance throws an error during loop", "[application][BaseApplication]")
+{
+    std::ostringstream info;
+    ConsoleAdapter adapter([&info](std::ostringstream& msg) { info << msg.str() << '\n'; });
+
+    GIVEN("An instance of BaseApplication with an internal module factory")
+    {
+        ModuleFactoryPool factories;
+        factories.define<TestErrorModule>(
+            "test",
+            ModuleInfo {"NAME", "AUTHOR", "EMAIL", "VERSION"}
+        );
+
+        BaseApplication app(adapter, factories);
+
+        WHEN("Add the module instance of 'test' with loop every 25ms")
+        {
+            app.add("test", "test");
+
+            auto ctx = app.get("test");
+            ctx->loopEnable(true);
+            ctx->loopInterval(25);
+
+            AND_WHEN("Run the application, wait 100ms and stop it")
+            {
+                auto f = app.run();
+
+                THEN("Shold throw an error")
+                {
+                    try {
+                        f.get();
+                        FAIL();
+                    }
+                    catch (const std::exception& e)
+                    {
+                        CHECK(std::string(e.what()) == "This is an error");
+                        SUCCEED();
+                    }
+                    app.stop();
+
+                    THEN("The instance lifecycle methods shold be called properly")
+                    {
+                        info.flush();
+                        CHECK_THAT(info.str(), Contains("setup"));
+                        CHECK_THAT(info.str(), Contains("start"));
+                        CHECK_THAT(info.str(), !Contains("loop"));
+                        CHECK_THAT(info.str(), Contains("stop"));
+                    }
                 }
             }
         }

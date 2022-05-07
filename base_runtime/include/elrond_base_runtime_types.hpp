@@ -7,6 +7,7 @@
 
     #include <map>
     #include <future>
+    #include <queue>
 
     namespace elrond
     {

@@ -1,7 +1,6 @@
 #ifndef ELROND_BASE_RUNTIME_APPLICATION_BASE_APPLICATION_HPP
     #define ELROND_BASE_RUNTIME_APPLICATION_BASE_APPLICATION_HPP
 
-    #include "elrond_base_runtime_types.hpp"
     #include "interface/Application.hpp"
 
     namespace elrond
@@ -10,14 +9,20 @@
         {
             class BaseApplication : public elrond::interface::Application
             {
-                protected:
+                private:
 
                     elrond::interface::ConsoleAdapter& _consoleAdapter;
                     const elrond::application::ModuleFactoryPool& _factories;
                     std::map<std::string, elrond::InstanceCtxP> _instances;
+                    std::atomic_bool _running;
+
+                    static void mainLoop(BaseApplication& app,
+                                         std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops);
+
+                protected:
 
                     virtual void setup();
-                    virtual void start();
+                    virtual std::future<void> start();
 
                 public:
 
@@ -38,7 +43,8 @@
                     elrond::InstanceCtxP add(const std::string& name, const std::string& factory);
                     void each(elrond::InstanceCtxH handle) const;
 
-                    virtual void run();
+                    virtual void stop();
+                    virtual std::future<void> run();
             };
         }
     }
