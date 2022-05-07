@@ -36,6 +36,7 @@
 
             class ModuleFactoryPool;
             class InstanceCtx;
+            class ApplicationEvents;
             class BaseApplication;
         }
 

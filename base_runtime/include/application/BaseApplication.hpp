@@ -2,26 +2,25 @@
     #define ELROND_BASE_RUNTIME_APPLICATION_BASE_APPLICATION_HPP
 
     #include "interface/Application.hpp"
+    #include "application/ApplicationEvents.hpp"
 
     namespace elrond
     {
         namespace application
         {
-            class BaseApplication : public elrond::interface::Application
+            class BaseApplication : public elrond::interface::Application,
+                                    public elrond::application::ApplicationEvents
             {
                 private:
 
                     elrond::interface::ConsoleAdapter& _consoleAdapter;
                     const elrond::application::ModuleFactoryPool& _factories;
                     std::map<std::string, elrond::InstanceCtxP> _instances;
-                    std::atomic<State> _state;
 
                     static void mainLoop(BaseApplication& app,
                                          std::queue<elrond::FutureHolderP<elrond::InstanceLoopCfg>> loops);
 
                 protected:
-
-                    void state(State state);
 
                     virtual void setup();
                     virtual std::future<void> start();
@@ -49,8 +48,6 @@
 
                     virtual void stop();
                     virtual std::future<void> run();
-
-                    State state() const;
                     void reset();
             };
         }

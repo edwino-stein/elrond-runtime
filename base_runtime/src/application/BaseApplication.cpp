@@ -6,6 +6,7 @@
 #include "runtime/FutureHolder.ipp"
 
 using elrond::application::BaseApplication;
+using elrond::application::ApplicationEvents;
 using elrond::application::State;
 using elrond::interface::ConsoleAdapter;
 using elrond::application::ModuleFactoryPool;
@@ -21,8 +22,7 @@ BaseApplication::BaseApplication(
 ):
     _consoleAdapter(consoleAdapter),
     _factories(factories),
-    _instances(),
-    _state(State::CREATED)
+    _instances()
 {}
 
 BaseApplication::~BaseApplication()
@@ -168,8 +168,7 @@ void BaseApplication::state(State state)
 
 void BaseApplication::reset()
 {
-    const auto state = this->state();
-    switch (state)
+    switch (this->state())
     {
         case State::INITIALIZING:
         case State::STARTING:
