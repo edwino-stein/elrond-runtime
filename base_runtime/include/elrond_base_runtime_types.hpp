@@ -38,6 +38,13 @@
         
         template <class T>
         using FutureHolderP = std::shared_ptr<runtime::FutureHolder<T>>;
+
+        struct InstanceLoopCfg
+        {
+            bool enabled;
+            elrond::timeT interval;
+            elrond::InstanceCtxP ctx;
+        };
     }
 
 #endif

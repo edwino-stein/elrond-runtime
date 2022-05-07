@@ -21,6 +21,9 @@
 
                     InstanceCtx(elrond::platform::ModuleInstanceP inst,
                                 const elrond::interface::Application& app);
+
+                    static elrond::InstanceLoopCfg doLoop(const elrond::InstanceLoopCfg& cfg);
+
                 public:
 
                     elrond::pointer<elrond::interface::Console> console() const override;
@@ -35,15 +38,16 @@
                     elrond::timeT loopInterval() const;
                     bool loopAsync() const;
 
+                    elrond::InstanceLoopCfg loopCfg();
+
                     void setup();
-                    void start();
-                    void loop();
+                    std::future<elrond::InstanceLoopCfg> start();
+                    std::future<elrond::InstanceLoopCfg> loop();
                     void stop();
 
                     static elrond::InstanceCtxP make(const std::string& name,
                                                      const std::string& factory,
                                                      const elrond::interface::Application& app);
-
             };
         }
     }
