@@ -5,7 +5,7 @@ enable_testing()
 project(
     elrond_runtime
     VERSION 0.1.0
-    DESCRIPTION "Elrond runtime application"
+    DESCRIPTION "Elrond Runtime Application"
     LANGUAGES CXX
 )
 
@@ -36,23 +36,25 @@ else()
 endif()
 
 # Look for and define Elrond Common Library path
-set(ELROND_COMMON_DIR "${PROJECT_SOURCE_DIR}/elrond")
-if (EXISTS "${ELROND_COMMON_DIR}-dev" AND EXISTS "${ELROND_COMMON_DIR}-dev/CMakeLists.txt")
-    set(ELROND_COMMON_DIR "${ELROND_COMMON_DIR}-dev")
-else()
-    if (NOT EXISTS "${ELROND_COMMON_DIR}" OR NOT EXISTS "${ELROND_COMMON_DIR}/CMakeLists.txt")
-        message(FATAL_ERROR "No Elrond Common Library found")
-    endif()
+set(ELROND_COMMON_BASE_DIR "${PROJECT_SOURCE_DIR}/elrond/")
+if(DEFINED ELROND_COMMON)
+    set(ELROND_COMMON_BASE_DIR "${ELROND_COMMON}")
 endif()
 
-message(STATUS "Using \"${ELROND_COMMON_DIR}\" as Elrond Common Library")
+if(NOT EXISTS "${ELROND_COMMON_BASE_DIR}/CMakeLists.txt")
+    message(FATAL_ERROR "No valid Elrond Common Library path was found.")
+endif()
+
+message(STATUS "Using \"${ELROND_COMMON_BASE_DIR}\" as Elrond Common Library")
+
+# Check if the Elrond Common Library was configured
+if(NOT EXISTS "${ELROND_COMMON_BASE_DIR}/build/elrond.cmake")
+    message(FATAL_ERROR "The Elrond Common Library was not been configured or build (missing \"build/elrond.cmake\" file).")
+endif()
 
 # Include Elrond Common Library exports
-include("${ELROND_COMMON_DIR}/build/elrond.cmake")
-
-# Find threads library
-find_package(Threads REQUIRED)
+include("${ELROND_COMMON_BASE_DIR}/build/elrond.cmake")
+message(STATUS "Including \"${ELROND_COMMON_BASE_DIR}/build/elrond.cmake\" from Elrond Common Library")
 
 # Add subprojects
-add_subdirectory(base_runtime)
-add_subdirectory(test)
+add_subdirectory(runtime)
