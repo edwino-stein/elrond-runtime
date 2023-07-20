@@ -4,4 +4,6 @@
     #include "application/FactoryAdapter.hpp"
     #include "application/InternalFactoryAdapter.ipp"
     #include "application/ExternalFactoryAdapter.hpp"
+    #include "application/ModuleFactoryPool.ipp"
+
 #endif
