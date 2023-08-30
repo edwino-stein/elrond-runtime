@@ -17,6 +17,7 @@
             class Application;
             class FactoryAdapter;
             class LoopTask;
+            class ModuleInstance;
         }
 
         namespace application
