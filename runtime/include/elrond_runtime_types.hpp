@@ -45,6 +45,7 @@
             class AsyncLoopTask;
             class ApplicationEvents;
             class BaseApplication;
+            class ApplicationEvents;
 
             using FactoryP = std::shared_ptr<elrond::interface::FactoryAdapter>;
             using FactoriesM = std::map<std::string, FactoryP>;
