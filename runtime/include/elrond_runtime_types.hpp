@@ -40,6 +40,7 @@
             template <class M> class InternalFactoryAdapter;
             class ModuleFactoryPool;
             class ModuleInstance;
+            class Context;
 
             class AsyncLoopTask;
             class ApplicationEvents;
