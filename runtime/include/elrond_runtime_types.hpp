@@ -18,6 +18,7 @@
             class FactoryAdapter;
             class LoopTask;
             class ModuleInstance;
+            class ConsoleAdapter;
         }
 
         namespace application
@@ -50,7 +51,7 @@
             using FactoryP = std::shared_ptr<elrond::interface::FactoryAdapter>;
             using FactoriesM = std::map<std::string, FactoryP>;
             using InstanceHandleP = std::unique_ptr<elrond::interface::Module, std::function<void(elrond::interface::Module*)>>;
-            using ModuleInstanceP = std::shared_ptr<elrond::application::ModuleInstance>;
+            using ModuleInstanceP = std::shared_ptr<elrond::interface::ModuleInstance>;
             using AsyncLoopTaskP = std::shared_ptr<elrond::application::AsyncLoopTask>;
         }
     }

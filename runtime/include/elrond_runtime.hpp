@@ -4,6 +4,8 @@
     #include "interface/Application.hpp"
     #include "interface/ModuleInstance.hpp"
     #include "interface/LoopTask.hpp"
+    #include "interface/ConsoleAdapter.hpp"
+    #include "application/BaseApplication.hpp"
     #include "application/ApplicationEvents.hpp"
     #include "application/Context.hpp"
     #include "application/FactoryAdapter.hpp"

@@ -5,11 +5,11 @@
 
 using elrond::application::ModuleInstance;
 using elrond::interface::Application;
-using elrond::application::FactoryP;
 using elrond::application::Context;
+using IFactoryAdapter = elrond::interface::FactoryAdapter;
 
-ModuleInstance::ModuleInstance(Application& app, FactoryP factory)
-: _app(&app), _instance(factory->make()), _enableLoop(false), _loopTs(elrond::seconds(0)) {}
+ModuleInstance::ModuleInstance(Application& app, IFactoryAdapter& factory)
+: _app(&app), _instance(factory.make()), _enableLoop(false), _loopTs(elrond::seconds(0)) {}
 
 void ModuleInstance::setup()
 { this->_instance->setup(std::make_shared<Context>(*this)); }

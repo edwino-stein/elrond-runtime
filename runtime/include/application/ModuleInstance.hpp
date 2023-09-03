@@ -17,7 +17,7 @@
 
                 public:
                     ELROND_CLASS_SPECIAL_MEMBERS(ModuleInstance, =delete, =delete, =delete, =delete, =delete)
-                    ModuleInstance(elrond::interface::Application& app, elrond::application::FactoryP factory);
+                    ModuleInstance(elrond::interface::Application& app, elrond::interface::FactoryAdapter& factory);
 
                     void setup() override;
                     void start() override;
