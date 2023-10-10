@@ -7,6 +7,7 @@
     #include "interface/ConsoleAdapter.hpp"
     #include "application/BaseApplication.hpp"
     #include "application/ApplicationEvents.hpp"
+    #include "application/RuntimeApplication.hpp"
     #include "application/Context.hpp"
     #include "application/FactoryAdapter.hpp"
     #include "application/InternalFactoryAdapter.ipp"

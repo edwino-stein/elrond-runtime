@@ -55,7 +55,7 @@ SCENARIO("Test ModuleInstance on normal usage", "[application][ModuleInstance]")
 
     GIVEN("An internal module instance")
     {
-        ModuleInstance instance(app, factories.get("internal"));
+        ModuleInstance instance(app, *(factories.get("internal")));
 
         WHEN("Check loop default settings")
         {
@@ -117,7 +117,7 @@ SCENARIO("Test ModuleInstance on normal usage", "[application][ModuleInstance]")
 
     GIVEN("An external module instance")
     {
-        ModuleInstance instance(app, factories.get("external"));
+        ModuleInstance instance(app, *(factories.get("external")));
 
         WHEN("Check loop default settings")
         {
