@@ -57,5 +57,6 @@ include("${ELROND_COMMON_BASE_DIR}/build/elrond.cmake")
 message(STATUS "Including \"${ELROND_COMMON_BASE_DIR}/build/elrond.cmake\" from Elrond Common Library")
 
 # Add subprojects
+add_subdirectory(vendor/argumentum)
 add_subdirectory(runtime)
 add_subdirectory(elrond_cli)
