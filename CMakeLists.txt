@@ -58,5 +58,6 @@ message(STATUS "Including \"${ELROND_COMMON_BASE_DIR}/build/elrond.cmake\" from 
 
 # Add subprojects
 add_subdirectory(vendor/argumentum)
+add_subdirectory(vendor/nlohmann_json)
 add_subdirectory(runtime)
 add_subdirectory(elrond_cli)

@@ -18,4 +18,4 @@ find_package(Threads REQUIRED)
 # Define a static library
 add_executable(elrond ${SRC_FILES})
 target_include_directories(elrond PUBLIC "${PROJECT_SOURCE_DIR}/include")
-target_link_libraries(elrond PUBLIC runtime_static Threads::Threads vendor_argumentum)
+target_link_libraries(elrond PUBLIC runtime_static Threads::Threads vendor_argumentum vendor_nlohmann_json)
