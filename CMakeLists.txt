@@ -58,3 +58,4 @@ message(STATUS "Including \"${ELROND_COMMON_BASE_DIR}/build/elrond.cmake\" from 
 
 # Add subprojects
 add_subdirectory(runtime)
+add_subdirectory(elrond_cli)
