@@ -54,8 +54,8 @@ class TestConsoleAdapter : public IConsoleAdapter, public MConsoleAdapter
 {
     public:
         TestConsoleAdapter(): MConsoleAdapter(MConsoleAdapter::makeNullStream){}
-        TestConsoleAdapter(MakeStreamH makeStream, AppendH preAppend, AppendH postAppend):
-        MConsoleAdapter(makeStream, preAppend, postAppend){}
+        TestConsoleAdapter(MakeStreamH makeStream, FlushH flush):
+        MConsoleAdapter(makeStream, flush){}
 
         elrond::pointer<ConsoleStreamAdapter> makeConsoleStreamAdapter(const std::string&) override
         { return MConsoleAdapter::makeConsoleStreamAdapter(); }
